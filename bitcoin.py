@@ -26,6 +26,19 @@ test_90 = pd.read_csv(data_path+'/test_90.csv')
 test_180 = pd.read_csv(data_path+'/test_180.csv')
 test_360 = pd.read_csv(data_path+'/test_360.csv')
 
+# compute similarity as defined in equation 9 of paper
+# a, b are vectors of size M
+def computeSimilarity(a, b):
+
+    mean_a = np.mean(a)
+    mean_b = np.mean(b)
+    std_a = np.std(a)
+    std_b = np.std(b)
+    total = 0
+    for z in range(len(a)):
+        total += (a[z] - mean_a) * (b[z] - mean_b)
+
+    return total/(len(a) * std_a * std_b)
 
 def computeDelta(wt, X, Xi):
     """
@@ -47,9 +60,27 @@ def computeDelta(wt, X, Xi):
         The output of equation 6, a prediction of the average price change.
     """
     # YOUR CODE GOES HERE
-    pass
 
+    numTotal = 0
+    denTotal = 0
 
+    for i in range(len(Xi.axes[0])):
+        sim = computeSimilarity(X, Xi.iloc[i])
+        # initial intrepretation, but no place to put c
+        #numTotal += Xi.iloc[i].loc['Yi'] * math.exp((-1/4) * sim**2)
+        #denTotal += math.exp((-1/4) * sim**2)
+
+        # i think correct interpretation based on top of right column, page 4
+        numTotal += Xi.iloc[i].loc['Yi'] * math.exp(wt * sim)
+        denTotal += math.exp(wt * sim)
+
+    return numTotal/denTotal
+    #ret = sum(y_i * e^ (-(1/4) s(x,y)^2)) / sum( e^ (-(1/4) s(x,y)^2))
+
+    #pass
+
+# test similarity function
+#print computeSimilarity([3, 2, 1], [1,2,3])
 
 # Perform the Bayesian Regression to predict the average price change for each dataset of train2 using train1 as input. 
 # These will be used to estimate the coefficients (w0, w1, w2, and w3) in equation 8.
@@ -57,6 +88,7 @@ weight = 2  # This constant was not specified in the paper, but we will use 2.
 trainDeltaP90 = np.empty(0)
 trainDeltaP180 = np.empty(0)
 trainDeltaP360 = np.empty(0)
+
 for i in xrange(0,len(train1_90.index)) :
   trainDeltaP90 = np.append(trainDeltaP90, computeDelta(weight,train2_90.iloc[i],train1_90))
 for i in xrange(0,len(train1_180.index)) :
@@ -117,3 +149,4 @@ compareDF = pd.DataFrame(compare)
 MSE = 0.0
 # YOUR CODE HERE
 print "The MSE is %f" % (MSE)
+
