@@ -29,7 +29,7 @@ test_360 = pd.read_csv(data_path+'/test_360.csv')
 # compute similarity as defined in equation 9 of paper
 # a, b are vectors of size M
 def computeSimilarity(a, b):
-
+    
     mean_a = np.mean(a)
     mean_b = np.mean(b)
     std_a = np.std(a)
